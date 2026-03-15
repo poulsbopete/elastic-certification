@@ -1,0 +1,327 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String   @default("Elastic Student")
+  email     String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  studySessions    StudySession[]
+  quizAttempts     QuizAttempt[]
+  practiceExams    PracticeExamAttempt[]
+  flashcardReviews FlashcardReview[]
+  notes            Note[]
+  studyPlans       StudyPlan[]
+  certProgress     CertProgress[]
+  weakAreas        WeakArea[]
+  settings         Settings?
+  achievements     Achievement[]
+}
+
+model Settings {
+  id                 String  @id @default(cuid())
+  userId             String  @unique
+  user               User    @relation(fields: [userId], references: [id])
+  dailyGoalMinutes   Int     @default(60)
+  pomodoroMinutes    Int     @default(25)
+  pomodoroBreak      Int     @default(5)
+  darkMode           Boolean @default(false)
+  emailNotifications Boolean @default(false)
+  reminderTime       String  @default("09:00")
+  preferredStudyMode String  @default("balanced")
+}
+
+model CertificationTrack {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  shortName   String
+  description String
+  icon        String
+  color       String
+  examDuration Int    @default(120)
+  passingScore Int    @default(70)
+  questionCount Int   @default(60)
+  officialUrl String?
+  isActive    Boolean @default(true)
+  sortOrder   Int     @default(0)
+
+  domains      Domain[]
+  certProgress CertProgress[]
+  studyPlans   StudyPlan[]
+  practiceExams PracticeExam[]
+}
+
+model Domain {
+  id            String @id @default(cuid())
+  certId        String
+  cert          CertificationTrack @relation(fields: [certId], references: [id])
+  name          String
+  description   String
+  weightPercent Int    @default(20)
+  sortOrder     Int    @default(0)
+  isEditable    Boolean @default(true)
+  disclaimer    String @default("Sample/editable study objective — verify against official Elastic training materials.")
+
+  topics    Topic[]
+  weakAreas WeakArea[]
+}
+
+model Topic {
+  id          String  @id @default(cuid())
+  domainId    String
+  domain      Domain  @relation(fields: [domainId], references: [id])
+  name        String
+  description String
+  isEditable  Boolean @default(true)
+
+  questions   Question[]
+  flashcards  Flashcard[]
+  labExercises LabExercise[]
+}
+
+model Question {
+  id           String       @id @default(cuid())
+  topicId      String
+  topic        Topic        @relation(fields: [topicId], references: [id])
+  type         String       // multiple_choice | multiple_select | true_false | scenario
+  stem         String
+  explanation  String
+  difficulty   String       @default("medium") // easy | medium | hard
+  isEditable   Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+
+  answerOptions    AnswerOption[]
+  quizAttemptItems QuizAttemptItem[]
+  examItems        PracticeExamItem[]
+}
+
+model AnswerOption {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id])
+  text       String
+  isCorrect  Boolean
+  sortOrder  Int      @default(0)
+}
+
+model Flashcard {
+  id        String   @id @default(cuid())
+  topicId   String
+  topic     Topic    @relation(fields: [topicId], references: [id])
+  front     String
+  back      String
+  hint      String?
+  tags      String   @default("[]")
+  createdAt DateTime @default(now())
+
+  reviews FlashcardReview[]
+}
+
+model FlashcardReview {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  cardId     String
+  card       Flashcard @relation(fields: [cardId], references: [id])
+  rating     String    // again | hard | good | easy
+  nextReview DateTime
+  interval   Int       @default(1)
+  easeFactor Float     @default(2.5)
+  reviewedAt DateTime  @default(now())
+}
+
+model LabExercise {
+  id            String   @id @default(cuid())
+  topicId       String
+  topic         Topic    @relation(fields: [topicId], references: [id])
+  title         String
+  goal          String
+  steps         String   @default("[]")
+  prerequisites String   @default("[]")
+  estimatedMins Int      @default(30)
+  difficulty    String   @default("medium")
+  notes         String   @default("")
+  isCompleted   Boolean  @default(false)
+  completedAt   DateTime?
+  isEditable    Boolean  @default(true)
+  createdAt     DateTime @default(now())
+}
+
+model StudyPlan {
+  id                  String   @id @default(cuid())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id])
+  certId              String
+  cert                CertificationTrack @relation(fields: [certId], references: [id])
+  targetDate          DateTime
+  hoursPerWeek        Int
+  experienceLevel     String   @default("intermediate")
+  preferredModes      String   @default("[]")
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  tasks StudyTask[]
+}
+
+model StudyTask {
+  id          String    @id @default(cuid())
+  planId      String
+  plan        StudyPlan @relation(fields: [planId], references: [id])
+  title       String
+  description String    @default("")
+  taskType    String    // quiz | flashcard | lab | reading | practice_exam | review
+  dueDate     DateTime
+  duration    Int       @default(30)
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+  sortOrder   Int       @default(0)
+  domainId    String?
+}
+
+model StudySession {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  certId      String?
+  domainId    String?
+  sessionType String   // quiz | flashcard | lab | reading | practice_exam
+  durationMins Int
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+  notes       String   @default("")
+}
+
+model PracticeExam {
+  id          String             @id @default(cuid())
+  certId      String
+  cert        CertificationTrack @relation(fields: [certId], references: [id])
+  name        String
+  description String             @default("")
+  duration    Int                @default(120)
+  isOfficial  Boolean            @default(false)
+  isEditable  Boolean            @default(true)
+
+  items    PracticeExamItem[]
+  attempts PracticeExamAttempt[]
+}
+
+model PracticeExamItem {
+  id         String       @id @default(cuid())
+  examId     String
+  exam       PracticeExam @relation(fields: [examId], references: [id])
+  questionId String
+  question   Question     @relation(fields: [questionId], references: [id])
+  sortOrder  Int          @default(0)
+}
+
+model PracticeExamAttempt {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  examId         String
+  exam           PracticeExam @relation(fields: [examId], references: [id])
+  score          Float
+  totalQuestions Int
+  correctAnswers Int
+  timeTakenMins  Int
+  passed         Boolean
+  answers        String       @default("{}")
+  domainScores   String       @default("{}")
+  startedAt      DateTime     @default(now())
+  completedAt    DateTime?
+}
+
+model QuizAttempt {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  certId      String?
+  domainId    String?
+  mode        String   // practice | timed | domain | weak_areas | mixed
+  score       Float
+  timeTakenMins Int    @default(0)
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+
+  items QuizAttemptItem[]
+}
+
+model QuizAttemptItem {
+  id             String      @id @default(cuid())
+  attemptId      String
+  attempt        QuizAttempt @relation(fields: [attemptId], references: [id])
+  questionId     String
+  question       Question    @relation(fields: [questionId], references: [id])
+  selectedOptions String     @default("[]")
+  isCorrect      Boolean
+  confidence     Int         @default(3)
+  timeTakenSecs  Int         @default(0)
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  content   String
+  noteType  String   @default("note") // note | mistake | snippet | command | investigation
+  certId    String?
+  domainId  String?
+  topicId   String?
+  tags      String   @default("[]")
+  isPinned  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WeakArea {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  domainId     String
+  domain       Domain   @relation(fields: [domainId], references: [id])
+  incorrectCount Int    @default(0)
+  totalAttempts  Int    @default(0)
+  lastAttempt    DateTime?
+  updatedAt      DateTime @updatedAt
+}
+
+model CertProgress {
+  id              String             @id @default(cuid())
+  userId          String
+  user            User               @relation(fields: [userId], references: [id])
+  certId          String
+  cert            CertificationTrack @relation(fields: [certId], references: [id])
+  status          String             @default("not_started") // not_started | in_progress | ready | passed
+  progressPercent Float              @default(0)
+  readinessScore  Float              @default(0)
+  examDate        DateTime?
+  passedAt        DateTime?
+  hoursStudied    Float              @default(0)
+  updatedAt       DateTime           @updatedAt
+
+  @@unique([userId, certId])
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  slug        String
+  name        String
+  description String
+  icon        String
+  earnedAt    DateTime @default(now())
+
+  @@unique([userId, slug])
+}
