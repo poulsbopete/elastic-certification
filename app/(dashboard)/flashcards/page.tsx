@@ -1,10 +1,9 @@
 import { prisma } from "@/lib/db";
+import { getSessionUser } from "@/lib/auth";
 import { FlashcardsClient } from "./flashcards-client";
 
 async function getFlashcardsData() {
-  const user = await prisma.user.findFirst({
-    where: { email: "student@elastic-cert.local" },
-  });
+  const user = await getSessionUser();
   if (!user) return null;
 
   const certs = await prisma.certificationTrack.findMany({

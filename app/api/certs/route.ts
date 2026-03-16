@@ -1,23 +1,22 @@
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { getSessionUser } from "@/lib/auth";
 
 export async function GET() {
   try {
-    const [certs, user] = await Promise.all([
-      prisma.certificationTrack.findMany({
-        where: { isActive: true },
-        orderBy: { sortOrder: "asc" },
-        include: {
-          domains: {
-            orderBy: { sortOrder: "asc" },
-            include: { topics: true },
-          },
-        },
-      }),
-      prisma.user.findFirst({ where: { email: "student@elastic-cert.local" } }),
-    ]);
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const certs = await prisma.certificationTrack.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: "asc" },
+      include: {
+        domains: {
+          orderBy: { sortOrder: "asc" },
+          include: { topics: true },
+        },
+      },
+    });
 
     const certProgresses = await prisma.certProgress.findMany({
       where: { userId: user.id },

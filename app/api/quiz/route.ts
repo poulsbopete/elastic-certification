@@ -9,10 +9,9 @@ export async function GET(req: NextRequest) {
   const count = parseInt(searchParams.get("count") ?? "10");
 
   try {
-    const user = await prisma.user.findFirst({
-      where: { email: "student@elastic-cert.local" },
-    });
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const { getSessionUser } = await import("@/lib/auth");
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     let questions;
 
@@ -76,10 +75,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { questionId, selectedOptionIds } = body;
 
-    const user = await prisma.user.findFirst({
-      where: { email: "student@elastic-cert.local" },
-    });
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const { getSessionUser } = await import("@/lib/auth");
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const question = await prisma.question.findUnique({
       where: { id: questionId },

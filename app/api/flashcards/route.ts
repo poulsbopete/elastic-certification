@@ -5,10 +5,9 @@ import { getNextReviewDate } from "@/lib/utils";
 export async function POST(req: NextRequest) {
   try {
     const { cardId, rating } = await req.json();
-    const user = await prisma.user.findFirst({
-      where: { email: "student@elastic-cert.local" },
-    });
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const { getSessionUser } = await import("@/lib/auth");
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const lastReview = await prisma.flashcardReview.findFirst({
       where: { userId: user.id, cardId },

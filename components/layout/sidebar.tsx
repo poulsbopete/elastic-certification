@@ -19,6 +19,7 @@ import {
   Timer,
   Trophy,
 } from "lucide-react";
+import { SignOutButton } from "@/components/shared/sign-out-button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -39,6 +40,7 @@ const bottomItems = [
   { href: "/admin", icon: NotebookPen, label: "Content Editor" },
   { href: "/settings", icon: Settings, label: "Settings" },
 ];
+
 
 export function Sidebar() {
   const { isSidebarOpen, toggleSidebar } = useAppStore();
@@ -153,6 +155,8 @@ export function Sidebar() {
               </Link>
             );
           })}
+
+          <SignOutButton />
 
           {/* Collapse button */}
           <button

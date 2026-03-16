@@ -29,6 +29,7 @@ interface Message {
 
 interface Props {
   data: {
+    openaiConfigured?: boolean;
     certProgresses: Array<{
       status: string;
       readinessScore: number;
@@ -66,13 +67,17 @@ const quickActions = [
   },
 ];
 
+const WELCOME_MOCK = `Hey! I'm your AI Study Coach 🎓\n\nI'm currently running in **mock mode** — I give you realistic study suggestions based on your progress data. Add \`OPENAI_API_KEY\` to your .env to use OpenAI for real AI responses.\n\nHow can I help you study smarter today?`;
+
+const WELCOME_OPENAI = `Hey! I'm your AI Study Coach 🎓\n\nI'm connected to **OpenAI** and ready to give you personalized study suggestions, explain answers, and generate practice questions.\n\nHow can I help you study smarter today?`;
+
 export function CoachClient({ data }: Props) {
-  const { certProgresses, weakAreas, studyStreak, hoursThisWeek, activeCert } = data;
+  const { openaiConfigured, certProgresses, weakAreas, studyStreak, hoursThisWeek, activeCert } = data;
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       role: "assistant",
-      content: `Hey! I'm your AI Study Coach 🎓\n\nI'm currently running in **mock mode** — I give you realistic study suggestions and guidance based on your progress data. To connect a real AI model (OpenAI, Anthropic, etc.), check the \`lib/mock-ai.ts\` integration points.\n\nHow can I help you study smarter today?`,
+      content: openaiConfigured ? WELCOME_OPENAI : WELCOME_MOCK,
       timestamp: new Date(),
     },
   ]);
@@ -185,8 +190,14 @@ export function CoachClient({ data }: Props) {
         <div>
           <h1 className="text-2xl font-bold text-slate-100">AI Study Coach</h1>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500">Mock mode active</span>
-            <Badge variant="secondary" className="text-xs">Plug in real AI via lib/mock-ai.ts</Badge>
+            {openaiConfigured ? (
+              <Badge variant="success" className="text-xs">OpenAI connected</Badge>
+            ) : (
+              <>
+                <span className="text-xs text-slate-500">Mock mode</span>
+                <Badge variant="secondary" className="text-xs">Add OPENAI_API_KEY to .env for real AI</Badge>
+              </>
+            )}
           </div>
         </div>
       </div>

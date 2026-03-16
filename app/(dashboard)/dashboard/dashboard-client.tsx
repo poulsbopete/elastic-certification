@@ -25,6 +25,7 @@ import { motion } from "framer-motion";
 
 interface Props {
   data: {
+    userName?: string;
     certsWithProgress: Array<{
       id: string;
       slug: string;
@@ -111,7 +112,7 @@ const noteTypeColors: Record<string, string> = {
 };
 
 export function DashboardClient({ data }: Props) {
-  const { certsWithProgress, stats, weakAreas, pinnedNotes, recentSessions } = data;
+  const { userName, certsWithProgress, stats, weakAreas, pinnedNotes, recentSessions } = data;
 
   const inProgressCerts = certsWithProgress.filter(
     (c) => c.progress?.status === "in_progress"
@@ -124,7 +125,7 @@ export function DashboardClient({ data }: Props) {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold text-slate-100 mb-1">
-              Welcome back, Elastic Student 👋
+              Welcome back, {userName ?? "Elastic Student"} 👋
             </h2>
             <p className="text-sm text-slate-400">
               {inProgressCerts.length > 0

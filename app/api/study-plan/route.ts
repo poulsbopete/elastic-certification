@@ -7,8 +7,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { certId, targetDate, hoursPerWeek, experienceLevel, preferredModes } = body;
 
-    const user = await prisma.user.findFirst({ where: { email: "student@elastic-cert.local" } });
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const { getSessionUser } = await import("@/lib/auth");
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const cert = await prisma.certificationTrack.findUnique({
       where: { id: certId },

@@ -49,7 +49,11 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ```env
 DATABASE_URL="file:./prisma/dev.db"
+NEXTAUTH_SECRET=your-secret-at-least-32-chars
+NEXTAUTH_URL=http://localhost:3000
 ```
+
+**Auth:** The app uses NextAuth.js with email/password (Credentials). Each user has their own progress, notes, and study plans. After seeding, you can sign in as the demo user (`student@elastic-cert.local` / `changeme`) or **Sign up** to create a new account.
 
 For Postgres (production), change to:
 ```env
@@ -246,7 +250,7 @@ npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed.ts
 | Weak area tracking | ✅ |
 | Real AI provider | Plug-in ready |
 | JSON import/export | Partial |
-| Auth/multi-user | Placeholder |
+| Auth (email/password, multi-user) | ✅ |
 
 ---
 

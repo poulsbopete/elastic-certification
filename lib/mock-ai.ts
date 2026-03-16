@@ -122,7 +122,9 @@ class MockAiProvider implements AiProvider {
   }
 }
 
-export const aiProvider: AiProvider = new MockAiProvider();
+const mockAiProvider = new MockAiProvider();
+export const aiProvider: AiProvider = mockAiProvider;
+export { mockAiProvider };
 
 /**
  * To replace with OpenAI:

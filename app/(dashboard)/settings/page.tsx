@@ -1,9 +1,12 @@
 import { prisma } from "@/lib/db";
+import { getSessionUser } from "@/lib/auth";
 import { SettingsClient } from "./settings-client";
 
 async function getData() {
-  const user = await prisma.user.findFirst({
-    where: { email: "student@elastic-cert.local" },
+  const sessionUser = await getSessionUser();
+  if (!sessionUser) return { user: null };
+  const user = await prisma.user.findUnique({
+    where: { id: sessionUser.id },
     include: { settings: true },
   });
   return { user };

@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/db";
+import { getSessionUser } from "@/lib/auth";
 import { AnalyticsClient } from "./analytics-client";
 import { subDays, startOfDay } from "date-fns";
 
 async function getAnalyticsData() {
-  const user = await prisma.user.findFirst({ where: { email: "student@elastic-cert.local" } });
+  const user = await getSessionUser();
   if (!user) return null;
 
   const now = new Date();

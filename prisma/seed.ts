@@ -1,6 +1,9 @@
 import { PrismaClient } from "@prisma/client";
+import { hash } from "bcryptjs";
 
 const prisma = new PrismaClient();
+
+const DEFAULT_DEMO_PASSWORD = "changeme";
 
 const DISCLAIMER =
   "Sample/editable study objective — verify against official Elastic training materials.";
@@ -8,13 +11,15 @@ const DISCLAIMER =
 async function main() {
   console.log("🌱 Seeding database...");
 
-  // Create default user
+  // Create default demo user (password: changeme)
+  const hashedPassword = await hash(DEFAULT_DEMO_PASSWORD, 12);
   const user = await prisma.user.upsert({
     where: { email: "student@elastic-cert.local" },
-    update: {},
+    update: { password: hashedPassword },
     create: {
       name: "Elastic Student",
       email: "student@elastic-cert.local",
+      password: hashedPassword,
       settings: {
         create: {
           dailyGoalMinutes: 90,

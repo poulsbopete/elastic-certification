@@ -1,4 +1,4 @@
-import { aiProvider } from "@/lib/mock-ai";
+import { aiProvider } from "@/lib/ai-provider";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {

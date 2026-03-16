@@ -1,22 +1,13 @@
-"use client";
+import { redirect } from "next/navigation";
+import { getSessionUser } from "@/lib/auth";
+import { DashboardLayoutClient } from "@/components/layout/dashboard-layout-client";
 
-import { Sidebar } from "@/components/layout/sidebar";
-import { Topbar } from "@/components/layout/topbar";
-
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="flex h-screen bg-slate-950 overflow-hidden">
-      <Sidebar />
-      <div className="flex flex-col flex-1 overflow-hidden min-w-0">
-        <Topbar />
-        <main className="flex-1 overflow-y-auto p-6 animate-fade-in">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
+  const user = await getSessionUser();
+  if (!user) redirect("/login?callbackUrl=/dashboard");
+  return <DashboardLayoutClient>{children}</DashboardLayoutClient>;
 }

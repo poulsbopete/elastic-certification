@@ -1,11 +1,10 @@
 import { prisma } from "@/lib/db";
+import { getSessionUser } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { CertDetailClient } from "./cert-detail-client";
 
 async function getCertData(slug: string) {
-  const user = await prisma.user.findFirst({
-    where: { email: "student@elastic-cert.local" },
-  });
+  const user = await getSessionUser();
   if (!user) return null;
 
   const cert = await prisma.certificationTrack.findUnique({

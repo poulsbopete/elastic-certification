@@ -4,10 +4,9 @@ import { subDays, startOfDay } from "date-fns";
 
 export async function GET() {
   try {
-    const user = await prisma.user.findFirst({
-      where: { email: "student@elastic-cert.local" },
-    });
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const { getSessionUser } = await import("@/lib/auth");
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const now = new Date();
     const sevenDaysAgo = subDays(now, 7);

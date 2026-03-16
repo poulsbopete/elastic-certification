@@ -1,11 +1,10 @@
 import { prisma } from "@/lib/db";
+import { getSessionUser } from "@/lib/auth";
 import { DashboardClient } from "./dashboard-client";
 import { subDays, startOfDay } from "date-fns";
 
 async function getDashboardData() {
-  const user = await prisma.user.findFirst({
-    where: { email: "student@elastic-cert.local" },
-  });
+  const user = await getSessionUser();
   if (!user) return null;
 
   const now = new Date();
@@ -65,6 +64,7 @@ async function getDashboardData() {
   }));
 
   return {
+    userName: user.name,
     certsWithProgress,
     stats: {
       totalStudyHours: Math.round((totalMins / 60) * 10) / 10,

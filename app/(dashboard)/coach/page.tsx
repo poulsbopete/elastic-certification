@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/db";
+import { getSessionUser } from "@/lib/auth";
 import { CoachClient } from "./coach-client";
 
 async function getCoachData() {
-  const user = await prisma.user.findFirst({ where: { email: "student@elastic-cert.local" } });
+  const user = await getSessionUser();
   if (!user) return null;
 
   const [certProgresses, weakAreas, recentSessions] = await Promise.all([
@@ -25,12 +26,15 @@ async function getCoachData() {
 
   const activeCert = certProgresses.find((cp) => cp.status === "in_progress") ?? null;
 
+  const openaiConfigured = !!(process.env.OPENAI_API_KEY ?? "").trim();
+
   return {
     certProgresses,
     weakAreas,
     studyStreak,
     hoursThisWeek,
     activeCert,
+    openaiConfigured,
   };
 }
 

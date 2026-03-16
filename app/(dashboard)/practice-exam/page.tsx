@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/db";
+import { getSessionUser } from "@/lib/auth";
 import { PracticeExamClient } from "./practice-exam-client";
 
 async function getData() {
-  const user = await prisma.user.findFirst({ where: { email: "student@elastic-cert.local" } });
+  const user = await getSessionUser();
   if (!user) return null;
 
   const certs = await prisma.certificationTrack.findMany({
